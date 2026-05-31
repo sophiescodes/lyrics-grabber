@@ -2,6 +2,7 @@
 // is currently playing (detected via MPRIS, fetched from Google).
 
 import GObject from 'gi://GObject';
+import GLib from 'gi://GLib';
 import St from 'gi://St';
 import Gio from 'gi://Gio';
 
@@ -54,31 +55,49 @@ class LyricsIndicator extends PanelMenu.Button {
         });
         this._lyricsLabel.clutter_text.line_wrap = true;
 
-        const box = new St.BoxLayout({vertical: true});
-        box.add_child(this._lyricsLabel);
+        this._box = new St.BoxLayout({vertical: true});
+        this._box.add_child(this._lyricsLabel);
 
-        const scroll = new St.ScrollView({
+        this._scroll = new St.ScrollView({
             style_class: 'lyrics-grabber-scroll',
             overlay_scrollbars: true,
-
-            // allow pop up scrolling
             x_expand: true,
-            y_expand: true,
         });
-        scroll.set_policy(St.PolicyType.NEVER, St.PolicyType.AUTOMATIC);
-        scroll.add_child(box);
+        this._scroll.set_policy(St.PolicyType.NEVER, St.PolicyType.AUTOMATIC);
+        this._scroll.add_child(this._box);
 
         const scrollItem = new PopupMenu.PopupBaseMenuItem({
             reactive: false,
             can_focus: false,
         });
-        scrollItem.add_child(scroll);
+        scrollItem.add_child(this._scroll);
         this.menu.addMenuItem(scrollItem);
+    }
+
+    // size scroll view to its content
+    _clampHeight() {
+        if (this._clampId)
+            return;
+
+        this._clampId = GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+            this._clampId = 0;
+
+            const scale = St.ThemeContext.get_for_stage(global.stage).scale_factor;
+            const monitor = Main.layoutManager.primaryMonitor;
+            const maxHeight = monitor ? monitor.height * 0.6 : 480 * scale;
+
+            const width = this._box.get_width();
+            const [, natHeight] = this._box.get_preferred_height(width > 0 ? width : -1);
+            this._scroll.set_height(Math.min(natHeight, maxHeight));
+
+            return GLib.SOURCE_REMOVE;
+        });
     }
 
     _setStatus(header, body) {
         this._headerItem.label.text = header;
         this._lyricsLabel.text = body;
+        this._clampHeight();
     }
 
     async _refresh() {
@@ -116,9 +135,14 @@ class LyricsIndicator extends PanelMenu.Button {
             // Don't cache errors, so the next open retries.
             this._lyricsLabel.text = `Failed to fetch lyrics: ${e.message}`;
         }
+        this._clampHeight();
     }
 
     destroy() {
+        if (this._clampId) {
+            GLib.source_remove(this._clampId);
+            this._clampId = 0;
+        }
         this._session?.abort();
         this._session = null;
         super.destroy();

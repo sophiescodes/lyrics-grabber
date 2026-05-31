@@ -4,7 +4,7 @@
 }
 
 .lyrics-grabber-scroll {
-    max-height: 28em;
+    /* Height is clamped in JS; St.ScrollView ignores CSS max-height. */
     min-width: 22em;
 }
 
