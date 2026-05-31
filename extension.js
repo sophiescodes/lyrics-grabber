@@ -19,8 +19,7 @@ class LyricsIndicator extends PanelMenu.Button {
         super._init(0.5, 'Lyrics Grabber');
         this._session = createSession();
 
-        // Cache the last result so reopening the popup for the same song does
-        // not re-fetch. Keyed by "title␟artist"; reset when the song changes.
+        // cache already searched lyrics
         this._cacheKey = null;
         this._cacheText = null;
 
