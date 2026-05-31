@@ -1,8 +1,8 @@
 {
   "uuid": "lyrics-grabber@sophiathesenpai.gmail.com",
   "name": "Lyrics Grabber",
-  "description": "Detects the currently playing song via MPRIS and shows its lyrics (fetched from a Google search) in a panel popup.",
+  "description": "Detects the currently playing song via MPRIS and shows its lyrics (fetched from lrclib) in a panel popup.",
   "shell-version": ["50"],
   "version": 1,
-  "url": "https://github.com/sophiathesenpai/lyrics-grabber"
+  "url": "https://github.com/smsanagustin/lyrics-grabber"
 }
