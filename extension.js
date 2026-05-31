@@ -19,6 +19,11 @@ class LyricsIndicator extends PanelMenu.Button {
         super._init(0.5, 'Lyrics Grabber');
         this._session = createSession();
 
+        // Cache the last result so reopening the popup for the same song does
+        // not re-fetch. Keyed by "title␟artist"; reset when the song changes.
+        this._cacheKey = null;
+        this._cacheText = null;
+
         this.add_child(new St.Icon({
             gicon: Gio.icon_new_for_string(
                 `${extension.path}/icons/music-note-symbolic.svg`),
@@ -87,13 +92,24 @@ class LyricsIndicator extends PanelMenu.Button {
         }
 
         const label = song.artist ? `${song.title} — ${song.artist}` : song.title;
-        this._setStatus(label, 'Searching Google for lyrics…');
+        const key = `${song.title}␟${song.artist}`;
+
+        // Reuse the cached lyrics while the same song is playing.
+        if (key === this._cacheKey) {
+            this._setStatus(label, this._cacheText);
+            return;
+        }
+
+        this._setStatus(label, 'Searching for lyrics…');
 
         try {
             const lyrics = await fetchLyrics(this._session, song);
-            this._lyricsLabel.text = lyrics ??
-                'No lyrics found on the Google results page for this song.';
+            const text = lyrics ?? 'No lyrics found for this song.';
+            this._cacheKey = key;
+            this._cacheText = text;
+            this._lyricsLabel.text = text;
         } catch (e) {
+            // Don't cache errors, so the next open retries.
             this._lyricsLabel.text = `Failed to fetch lyrics: ${e.message}`;
         }
     }
