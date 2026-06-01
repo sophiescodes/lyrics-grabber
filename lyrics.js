@@ -1,9 +1,5 @@
 // Lyrics fetching.
-//
-// NOTE: this originally scraped Google ("<song> <artist> lyrics google"), but
-// Google now renders its lyrics widget client-side and blocks non-JS clients
-// with an "enable JavaScript" interstitial, so the results page contains no
-// lyrics to scrape. We instead use lrclib.net — a free, key-less lyrics API
+// The code now uses lrclib.net — a free, key-less lyrics API
 // purpose-built for MPRIS-style players — which returns clean plain text.
 
 import GLib from "gi://GLib";
