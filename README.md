@@ -20,3 +20,6 @@ It works in three steps:
 | `stylesheet.css`                | Popup styling                                             |
 | `icons/music-note-symbolic.svg` | Panel icon                                                |
 | `metadata.json`                 | Extension manifest                                        |
+
+## Screenshot
+<img width="489" height="812" alt="image" src="https://github.com/user-attachments/assets/dad72b8f-e5c1-476d-b77a-a16efaad1188" />
