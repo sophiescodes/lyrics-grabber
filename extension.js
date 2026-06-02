@@ -4,6 +4,7 @@
 import GObject from "gi://GObject";
 import GLib from "gi://GLib";
 import St from "gi://St";
+import Pango from "gi://Pango";
 import Gio from "gi://Gio";
 
 import { Extension } from "resource:///org/gnome/shell/extensions/extension.js";
@@ -70,14 +71,21 @@ const LyricsIndicator = GObject.registerClass(
       this.menu.addMenuItem(this._headerItem);
       this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-      // Body: popup menu's height expands to fit entire lyrics
+      // allow scrolling through the pop up when lyrics is too long
       this._lyricsLabel = new St.Label({
         style_class: "lyrics-grabber-body",
         text: "Click to load lyrics for the current song.",
       });
-      this._lyricsLabel.clutter_text.line_wrap = true;
 
-      this._box = new St.BoxLayout({ vertical: true });
+      // allows scrollview to see full height of the lyrics so it can scroll it
+      this._lyricsLabel.clutter_text.line_wrap = true;
+      this._lyricsLabel.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
+
+      this._box = new St.BoxLayout({
+        vertical: true,
+        x_expand: true,
+        y_expand: true,
+      });
       this._box.add_child(this._lyricsLabel);
 
       this._scroll = new St.ScrollView({
@@ -88,39 +96,14 @@ const LyricsIndicator = GObject.registerClass(
       this._scroll.set_policy(St.PolicyType.NEVER, St.PolicyType.AUTOMATIC);
       this._scroll.add_child(this._box);
 
-      const scrollItem = new PopupMenu.PopupBaseMenuItem({
-        reactive: false,
-        can_focus: false,
-      });
-      scrollItem.add_child(this._scroll);
-      this.menu.addMenuItem(scrollItem);
-    }
-
-    // size scroll view to its content
-    _clampHeight() {
-      if (this._clampId) return;
-
-      this._clampId = GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-        this._clampId = 0;
-
-        const scale = St.ThemeContext.get_for_stage(global.stage).scale_factor;
-        const monitor = Main.layoutManager.primaryMonitor;
-        const maxHeight = monitor ? monitor.height * 0.6 : 480 * scale;
-
-        const width = this._box.get_width();
-        const [, natHeight] = this._box.get_preferred_height(
-          width > 0 ? width : -1,
-        );
-        this._scroll.set_height(Math.min(natHeight, maxHeight));
-
-        return GLib.SOURCE_REMOVE;
-      });
+      const section = new PopupMenu.PopupMenuSection();
+      section.actor.add_child(this._scroll);
+      this.menu.addMenuItem(section);
     }
 
     _setStatus(header, body) {
       this._headerItem.label.text = header;
       this._lyricsLabel.text = body;
-      this._clampHeight();
     }
 
     async _refresh() {
@@ -158,7 +141,6 @@ const LyricsIndicator = GObject.registerClass(
         // Don't cache errors, so the next open retries.
         this._lyricsLabel.text = `Failed to fetch lyrics: ${e.message}`;
       }
-      this._clampHeight();
     }
 
     destroy() {
@@ -168,10 +150,6 @@ const LyricsIndicator = GObject.registerClass(
       if (this._refreshId) {
         GLib.source_remove(this._refreshId);
         this._refreshId = 0;
-      }
-      if (this._clampId) {
-        GLib.source_remove(this._clampId);
-        this._clampId = 0;
       }
       this._session?.abort();
       this._session = null;

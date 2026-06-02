@@ -4,11 +4,12 @@
 }
 
 .lyrics-grabber-scroll {
-    /* Height is clamped in JS; St.ScrollView ignores CSS max-height. */
+    /* popup max height */
     min-width: 22em;
+    max-height: 32em;
 }
 
 .lyrics-grabber-body {
     padding: 0.25em 0.75em;
-    font-size: 1.0em;
+    font-size: 1em;
 }
