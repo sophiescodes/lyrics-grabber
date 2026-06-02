@@ -36,12 +36,13 @@ const LyricsIndicator = GObject.registerClass(
       this._buildMenu();
 
       // load the lyrics if cached lyrics does not exist
-      this._openStateId = this.menu.connect(
+      this.menu.connectObject(
         "open-state-changed",
         (_menu, isOpen) => {
           if (isOpen && this._cacheText === null)
             this._refresh().catch((e) => logError(e, "Lyrics Grabber"));
         },
+        this,
       );
 
       // Fetch lyrics in the background whenever the playing song changes
@@ -161,10 +162,7 @@ const LyricsIndicator = GObject.registerClass(
     }
 
     destroy() {
-      if (this._openStateId) {
-        this.menu.disconnect(this._openStateId);
-        this._openStateId = 0;
-      }
+      this.menu.disconnectObject(this);
       this._unwatch?.();
       this._unwatch = null;
       if (this._refreshId) {
