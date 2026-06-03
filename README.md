@@ -22,4 +22,9 @@ It works in three steps:
 | `metadata.json`                 | Extension manifest                                        |
 
 ## Screenshot
-<img width="489" height="812" alt="image" src="https://github.com/user-attachments/assets/dad72b8f-e5c1-476d-b77a-a16efaad1188" />
+
+<img width="445" height="595" alt="image" src="https://github.com/user-attachments/assets/1526ce38-c0fc-4768-b6c1-a73cf2fd917f" />
+
+## Todo
+
+- [ ] Add font size adjustment option
