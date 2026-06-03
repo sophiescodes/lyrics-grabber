@@ -129,6 +129,9 @@ const LyricsIndicator = GObject.registerClass(
         return;
       }
 
+      // reset scroll position when the song has changed
+      this._scroll.vadjustment.value = 0;
+
       this._setStatus(label, "Searching for lyrics…");
 
       try {
