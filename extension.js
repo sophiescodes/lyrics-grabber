@@ -39,9 +39,10 @@ const LyricsIndicator = GObject.registerClass(
 
       // apply the configured font size in the settings
       this._applyFontSize();
-      this._settingsChangedId = this._settings.connect(
+      this._settings.connectObject(
         "changed::font-size",
         () => this._applyFontSize(),
+        this,
       );
 
       // load the lyrics if cached lyrics does not exist
@@ -164,10 +165,7 @@ const LyricsIndicator = GObject.registerClass(
       this.menu.disconnectObject(this);
       this._unwatch?.();
       this._unwatch = null;
-      if (this._settingsChangedId) {
-        this._settings.disconnect(this._settingsChangedId);
-        this._settingsChangedId = 0;
-      }
+      this._settings.disconnectObject(this);
       this._settings = null;
       if (this._refreshId) {
         GLib.source_remove(this._refreshId);
